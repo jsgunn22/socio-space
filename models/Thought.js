@@ -21,7 +21,9 @@ const thoughtSchema = new mongoose.Schema(
 );
 
 thoughtSchema.virtual("reactionCount").get(() => {
-  return this.reactions.length;
+  return this.reactions && Array.isArray(this.reactions)
+    ? this.reactions.length
+    : 0;
 });
 
 const Thought = mongoose.model("thought", thoughtSchema);

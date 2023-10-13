@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+const { Schema, model } = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     username: { type: String, unique: true, required: true, trim: true },
     email: {
@@ -16,13 +16,13 @@ const userSchema = new mongoose.Schema(
     },
     thoughts: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "thought",
       },
     ],
     friends: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "user",
       },
     ],
@@ -36,9 +36,9 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.virtual("friendCount").get(() => {
-  return this.friends.length;
+  return this.friends && Array.isArray(this.friends) ? this.friends.length : 0;
 });
 
-const User = mongoose.model("user", userSchema);
+const User = model("user", userSchema);
 
 module.exports = User;
