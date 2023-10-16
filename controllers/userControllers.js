@@ -6,9 +6,9 @@ const getAllUsers = async (req, res) => {
   try {
     const getAllUsers = await User.find({});
     res.status(200).json(getAllUsers);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
   }
 };
 
@@ -66,6 +66,7 @@ const updateUser = async (req, res) => {
   }
 };
 
+// delete a user
 const deleteUser = async (req, res) => {
   try {
     const thisId = new ObjectId(req.params.id);
