@@ -20,10 +20,8 @@ const thoughtSchema = new mongoose.Schema(
   }
 );
 
-thoughtSchema.virtual("reactionCount").get(() => {
-  return this.reactions && Array.isArray(this.reactions)
-    ? this.reactions.length
-    : 0;
+thoughtSchema.virtual("reactionCount").get(function () {
+  return this.reactions.length;
 });
 
 const Thought = mongoose.model("thought", thoughtSchema);

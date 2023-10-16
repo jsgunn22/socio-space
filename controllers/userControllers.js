@@ -1,10 +1,12 @@
 const { ObjectId } = require("mongodb");
-const { User } = require("../models");
+const { User, Thought } = require("../models");
 
 // get all users
 const getAllUsers = async (req, res) => {
   try {
-    const getAllUsers = await User.find().populate("thoughts");
+    const getAllUsers = await User.find()
+      .populate(["thoughts", "friends"])
+      .select("-__v");
     res.status(200).json(getAllUsers);
   } catch (error) {
     console.log(error);
@@ -17,7 +19,9 @@ const getUser = async (req, res) => {
   try {
     const thisId = new ObjectId(req.params.id);
 
-    const getThisUser = await User.findById(thisId).populate("thoughts");
+    const getThisUser = await User.findById(thisId)
+      .populate(["thoughts", "friends"])
+      .select("-__v");
 
     if (getThisUser) {
       res.status(200).json(getThisUser);
@@ -69,13 +73,57 @@ const updateUser = async (req, res) => {
 // delete a user
 const deleteUser = async (req, res) => {
   try {
-    const thisId = new ObjectId(req.params.id);
-    const deleteThisUser = await User.findByIdAndRemove(thisId);
+    const deleteThisUser = await User.findByIdAndRemove(req.params.id);
 
     if (!deleteThisUser) {
-      res.status(404).json(`No user exists with id# ${thisId}`);
+      res.status(404).json(`No user exists with id# ${req.params.id}`);
     }
-    res.status(200).json(`user with id# ${thisId} has been deleted`);
+    await Thought.deleteMany({ _id: { $in: deleteThisUser.thoughts } });
+
+    res.status(200).json(`user with id# ${req.params.id} has been deleted`);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+// add a friend to a user
+const addFriend = async (req, res) => {
+  try {
+    const addFriendToMyList = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $addToSet: { friends: req.params.friendId } },
+      { new: true }
+    );
+
+    if (!addFriendToMyList) {
+      res
+        .status(404)
+        .json(`user with id# ${req.params.friendId} does not exist`);
+    }
+
+    res.status(200).json(addFriendToMyList);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+// remove a friend
+const removeFriend = async (req, res) => {
+  try {
+    const removeFriendFromMyList = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $pull: { friends: req.params.friendId } },
+      { new: true }
+    );
+
+    if (!removeFriendFromMyList) {
+      res
+        .status(404)
+        .json(`User with id# ${req.params.friendId} does not exist`);
+    }
+    res.status(200).json(removeFriendFromMyList);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -88,4 +136,6 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  addFriend,
+  removeFriend,
 };
