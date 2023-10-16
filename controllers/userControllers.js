@@ -4,7 +4,7 @@ const { User } = require("../models");
 // get all users
 const getAllUsers = async (req, res) => {
   try {
-    const getAllUsers = await User.find({});
+    const getAllUsers = await User.find().populate("thoughts");
     res.status(200).json(getAllUsers);
   } catch (error) {
     console.log(error);
@@ -17,7 +17,7 @@ const getUser = async (req, res) => {
   try {
     const thisId = new ObjectId(req.params.id);
 
-    const getThisUser = await User.findById(thisId);
+    const getThisUser = await User.findById(thisId).populate("thoughts");
 
     if (getThisUser) {
       res.status(200).json(getThisUser);
@@ -72,15 +72,20 @@ const deleteUser = async (req, res) => {
     const thisId = new ObjectId(req.params.id);
     const deleteThisUser = await User.findByIdAndRemove(thisId);
 
-    if (deleteThisUser) {
-      res.status(200).json(deleteThisUser);
-    } else {
+    if (!deleteThisUser) {
       res.status(404).json(`No user exists with id# ${thisId}`);
     }
+    res.status(200).json(`user with id# ${thisId} has been deleted`);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
   }
 };
 
-module.exports = { getAllUsers, getUser, createUser, updateUser, deleteUser };
+module.exports = {
+  getAllUsers,
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+};
