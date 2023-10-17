@@ -37,7 +37,7 @@ const getUser = async (req, res) => {
 // create a user
 const createUser = async (req, res) => {
   try {
-    const newUser = User.create({
+    const newUser = await User.create({
       username: req.body.username,
       email: req.body.email,
     });
@@ -94,7 +94,9 @@ const addFriend = async (req, res) => {
       req.params.userId,
       { $addToSet: { friends: req.params.friendId } },
       { new: true }
-    );
+    )
+      .populate("friends")
+      .select("-__v");
 
     if (!addFriendToMyList) {
       res
@@ -116,7 +118,9 @@ const removeFriend = async (req, res) => {
       req.params.userId,
       { $pull: { friends: req.params.friendId } },
       { new: true }
-    );
+    )
+      .populate("friends")
+      .select("-__v");
 
     if (!removeFriendFromMyList) {
       res
